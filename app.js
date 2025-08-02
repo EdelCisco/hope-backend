@@ -8,7 +8,7 @@ const cookieParser     = require ('cookie-parser');
 const db                = require("./Config/db.js");
 const {sendReminderEmail} = require('./Config/sendReminderEmail');
 const http = require('http');
-const {Socket }= require('../backend/Config/server')
+const {Socket }= require('./Config/server.js')
 
 const Auth             = require ('./Auth/Authentification.js');
 
