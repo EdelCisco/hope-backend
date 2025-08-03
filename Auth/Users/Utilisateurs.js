@@ -8,8 +8,7 @@ const {IO,verifyEmail, connectedUsers} = require('../../Config/server.js');
 const {body, validationResult} = require ('express-validator');
 const timezone                 = require("dayjs/plugin/timezone");
 const crypto = require('crypto');
-const {ConfirmationCompte,UpdatePassword} = require('../../Config/sendReminderEmail.js');
-const { route } = require("../Authentification.js");
+const {ConfirmationCompte,UpdatePassword} = require('../../Config/sendReminderEmail.js')
 
 
 
