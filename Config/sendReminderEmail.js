@@ -9,13 +9,13 @@ dotenv.config();
             pass: process.env.EMAIL_PASS
         }
     });
-async function ConfirmationCompte (email,code){
+async function ConfirmationCompte (msg,email,code){
 
   
                               const mailOptions = {
                                   from: process.env.EMAIL_USER,
                                   to: email,
-                                  subject: 'Confirmez votre email',
+                                  subject: msg,
                                   html: `<p>${code}</p>`
       };
   

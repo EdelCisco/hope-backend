@@ -7,8 +7,10 @@ const express          = require ("express");
 const cookieParser     = require ('cookie-parser');
 const db                = require("./Config/db.js");
 const {sendReminderEmail} = require('./Config/sendReminderEmail');
+const session = require('express-session');
 const http = require('http');
 const {Socket }= require('./Config/server.js')
+const passport = require('./Config/auth.js');
 
 const Auth             = require ('./Auth/Authentification.js');
 
@@ -17,6 +19,9 @@ const Auth             = require ('./Auth/Authentification.js');
 
 
        dotenv.config();
+
+
+
 
  const app             = express();
 const Port            = process.env.PORT ;
@@ -28,6 +33,9 @@ app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('common'));
+app.use(session({ secret: 'secret', resave: false, saveUninitialized: true }));
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(cors({
   origin: ['http://localhost:5173','http://localhost:5174'],  // Permet uniquement l'origine du frontend React

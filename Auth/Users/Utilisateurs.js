@@ -4,7 +4,7 @@ const jwt                      = require('jsonwebtoken');
 const utc                      = require("dayjs/plugin/utc");
 const db                       = require("../../Config/db.js");
 const {IO,verifyEmail, connectedUsers} = require('../../Config/server.js');
-
+const passport = require('../../Config/auth.js');
 const {body, validationResult} = require ('express-validator');
 const timezone                 = require("dayjs/plugin/timezone");
 const crypto = require('crypto');
@@ -17,6 +17,54 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 // GESTION DU TOKEN AU NIVEAU DE LA BARRE DE NAVIGATION
+
+exports.google= passport.authenticate('google', { scope: ['profile', 'email'] })
+
+exports.googles = (req, res, next) => {
+  passport.authenticate('google', (err, user, info) => {
+    if (err) {
+      console.error('Erreur pendant la connexion Google :', err);
+      return res.redirect('/Connexion'); // redirige proprement
+    }
+
+    if (!user) {
+      console.warn('Connexion échouée ou utilisateur non trouvé');
+      return res.redirect('/Connexion');
+    }
+
+    req.logIn(user, (err) => {
+      if (err) {
+        console.error('Erreur lors de la connexion de l\'utilisateur :', err);
+        return res.redirect('/Connexion');
+      }
+
+      // Création du token JWT avec les infos de `user`
+      const token = jwt.sign(
+        {
+          id: user.id_client,
+          nom: user.nom_complet,
+          ddn: user.date_de_naissance,
+          email: user.email,
+          sexe: user.xexe,
+          MDP:"******",
+          rg: user.rang
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+
+      // Cookie sécurisé contenant le token
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: false, // mettre à true si HTTPS
+        sameSite: 'lax',
+        maxAge: 3600000
+      });
+       console.log('Connexion réussie via Google OAuth');
+       return res.redirect('http://localhost:5173');
+    })
+  })(req, res, next);
+};
 
 exports.token = async(req, res) => {
 
@@ -43,18 +91,12 @@ exports.token = async(req, res) => {
                 } 
                 else { 
                   
-                    
-                    let mdp = "";
-
-                    for(i=0;i< (user.MDP).length;i++) {
-                        mdp += ".";
-                    }
                   
                  const infos={
                      id_client: sql[0].id_client,
                     Nom: sql[0].nom_complet,
                     ddn: sql[0].date_de_naissance,
-                    MotDePasse: mdp,
+                    MotDePasse: user.MDP,
                     Email: sql[0].email,
                     Sexe: sql[0].sexe,
                     Rang: sql[0].rang,
@@ -127,10 +169,11 @@ exports.Inscription = async (req, res) => {
                         else {
                             const hash = await argon2.hash(password)
 
-                           let [sql] = await db.execute('INSERT INTO clients (email,mot_de_passe) VALUES (?,?)',[email.toLowerCase(),hash]);
+                           let [sql] = await db.execute('INSERT INTO clients (email,mot_de_passe,date_de_naissance) VALUES (?,?,?)',[email.toLowerCase(),hash,"2000-01-01"]);
                             console.log("Inscription reussie");
                             const code = Math.floor(1000 + Math.random() * 9000);
-                            ConfirmationCompte(email, code)
+                            const msg= "Veuillez confirmer votre compte avec ce code de confirmation"
+                            ConfirmationCompte(msg,email, code)
                             res.json({
                                 
                                 errors : null,
@@ -157,7 +200,8 @@ exports.resendCode = async (req, res) => {
  
   try {
                             const code = Math.floor(1000 + Math.random() * 9000);
-                            ConfirmationCompte(email, code)
+                            const msg= "Voici le nouveau code pour activer votre compte"
+                            ConfirmationCompte(msg,email, code)
                             res.json({
                                 
                                 errors : null,
@@ -185,7 +229,7 @@ exports.Code = async (req, res) => {
             let [sql] = await db.execute(`UPDATE clients SET confirmation=1  WHERE email=?`, [email])
              let [sq] = await db.execute(`SELECT * FROM clients  WHERE email=?`, [email])
              const data= sq[0]
-               const token = jwt.sign({ id: data.id_client,nom: data.nom_complet,ddn: data.date_de_naissance, email: data.email, MDP:'.....', sexe: data.xexe, rg: data.rang
+               const token = jwt.sign({ id: data.id_client,nom: data.nom_complet,ddn: data.date_de_naissance, email: data.email, MDP:"******", sexe: data.xexe, rg: data.rang
                             }, process.env.JWT_SECRET, {expiresIn: '1h'});
                         
 
@@ -224,7 +268,8 @@ exports.ModifierMotDePasse = async (req, res) => {
 
             if(sql.length>0) {
                  const code = Math.floor(1000 + Math.random() * 9000);
-                            ConfirmationCompte(email, code)
+                 const msg= "Votre code pour la modification de votre mot de passe"
+                            ConfirmationCompte(msg,email, code)
                             res.json({
                                 
                                 errors : null,
@@ -256,11 +301,11 @@ exports.ModifierMotDePasse = async (req, res) => {
 
 exports.Connexion = async (req, res) => {
     try {
-       
         
             // Échapper les entrées pour éviter l'injection SQL
             const email    = req.body.email;
             const password = req.body.password;
+            const rememberMe= req.body.rememberMe
 
             let [sql] = await db.execute('SELECT * FROM clients WHERE email=?',[email])
 
@@ -281,11 +326,11 @@ exports.Connexion = async (req, res) => {
                 else {
                   
                            
-                         const token = jwt.sign({ id: data.id_client,nom: data.nom_complet,ddn: data.date_de_naissance, email: data.email, MDP: password, sexe: data.xexe, rg: data.rang
-                            }, process.env.JWT_SECRET, {expiresIn: '1h'});
+                         const token = jwt.sign({ id: data.id_client,nom: data.nom_complet,ddn: data.date_de_naissance, email: data.email, MDP: "******", sexe: data.xexe, rg: data.rang
+                            }, process.env.JWT_SECRET, {expiresIn: rememberMe ? '7d' : '1h'});
                         
 
-                    res.cookie('token', token, {httpOnly: true, secure: true, sameSite:'lax', maxAge: 86400000});
+                    res.cookie('token', token, {httpOnly: true, secure: true, sameSite:'lax',     maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000});
                     res.redirect('/Authenfication');
                        
 
@@ -406,19 +451,12 @@ exports.authentification = async(req, res) => {
                     return res.status(404).json({ error: 'Utilisateur non trouvé' });
                 } 
                 else { 
-                  
-                    
-                    let mdp = "";
-
-                    for(i=0;i< (user.MDP).length;i++) {
-                        mdp += ".";
-                    }
                       
                  const infos={
                     id_client: sql[0].id_client,
                     Nom: sql[0].nom_complet,
                     ddn: sql[0].date_de_naissance,
-                    MotDePasse: mdp,
+                    MotDePasse: user.MDP,
                     Email: sql[0].email,
                     Sexe: sql[0].sexe,
                     Rang: sql[0].Rang,

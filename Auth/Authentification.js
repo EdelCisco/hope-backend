@@ -40,6 +40,10 @@ router.post('/MotDePasseOublie',Users.ModifierMotDePasse)
 //     body("password").isLength({min:8}).withMessage("Le mot de passe doit contenir au moins 8 caractères").matches(/[a-z]/).withMessage("Le mot de passe doit contenir au moins une minuscule").matches(/[A-Z]/).withMessage("Le mot de passe doit contenir au moins une majuscule").matches(/[\W_]/).withMessage("Le mot de passe doit contenir au moins un caractèr spéciale").matches(/[0-9]/).withMessage("Le mot de passe doit contenir au moins un chiffre"),
 //   ],Users.resetPassword)
 
+router.get('/auth/google', Users.google);
+
+
+router.get('/auth/google/callback', Users.googles);
 
                                                                              
                                                       module.exports= router;
