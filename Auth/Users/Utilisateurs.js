@@ -174,7 +174,7 @@ exports.Inscription = async (req, res) => {
                         else {
                             const hash = await argon2.hash(password)
 
-                           let [sql] = await db.execute('INSERT INTO clients (nom_compet, sexe, date_de_naissance, email, mot_de_passe,complet, confirmation) VALUES (?,?,?,?,?,?,?)',["", "", "2000-01-01", email.toLowerCase(),hash, 0, 0]);
+                           let [sql] = await db.execute('INSERT INTO clients (nom_complet, sexe, date_de_naissance, email, mot_de_passe,complet, confirmation) VALUES (?,?,?,?,?,?,?)',["", "", "2000-01-01", email.toLowerCase(),hash, 0, 0]);
                             console.log("Inscription reussie");
                             const code = Math.floor(1000 + Math.random() * 9000);
                             const msg= "Veuillez confirmer votre compte avec ce code de confirmation"
