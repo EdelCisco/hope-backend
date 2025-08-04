@@ -246,6 +246,7 @@ exports.Code = async (req, res) => {
             else{
         
                 res.json({
+                    erors: null,
                     route:'/RenouvelerLemdp',
                     email:email
                 })
@@ -473,7 +474,7 @@ exports.authentification = async(req, res) => {
                     
                    
                  }
-               res.json({route:'/', infos: infos})
+               res.json({errors:null,route:'/', infos: infos})
                 }
             }
             catch(e){
