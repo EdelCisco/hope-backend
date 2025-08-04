@@ -228,10 +228,10 @@ exports.Code = async (req, res) => {
   try {
       const {email,code,objet, nbre1,nbre2,nbre3,nbre4} = req.body;
         const code1= nbre1+nbre2+nbre3+nbre4;
-       console.log(req.body)
+      
  
         if(code1===code){
-            console.log(objet)
+           
             if(objet==='MotDePasse'){
             let [sql] = await db.execute(`UPDATE clients SET confirmation=1  WHERE email=?`, [email])
              let [sq] = await db.execute(`SELECT * FROM clients  WHERE email=?`, [email])
