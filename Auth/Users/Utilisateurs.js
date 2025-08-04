@@ -236,11 +236,12 @@ exports.Code = async (req, res) => {
             let [sql] = await db.execute(`UPDATE clients SET confirmation=1  WHERE email=?`, [email])
              let [sq] = await db.execute(`SELECT * FROM clients  WHERE email=?`, [email])
              const data= sq[0]
-               const token = jwt.sign({ id: data.id_client,nom: data.nom_complet,ddn: data.date_de_naissance, email: data.email, MDP:"******", sexe: data.xexe, rg: data.rang
+                
+                   const token = jwt.sign({ id: data.id_client,nom: data.nom_complet,ddn: data.date_de_naissance, email: data.email, MDP: "******", sexe: data.xexe, rg: data.rang
                             }, process.env.JWT_SECRET, {expiresIn: '1h'});
                         
 
-                    res.cookie('token', token, {httpOnly: true, secure: true, sameSite:'lax', maxAge: 86400000});
+                    res.cookie('token', token, {httpOnly: true, secure: true, sameSite:'lax', maxAge:  86400000});
                     res.redirect('/Authenfication');
             }
             else{
@@ -251,7 +252,7 @@ exports.Code = async (req, res) => {
                     email:email
                 })
             }
-         
+        
 
         } else{
             return res.json({
@@ -440,7 +441,7 @@ exports.deconnexion = async(req, res) => {
 
 exports.authentification = async(req, res) => {
     const token = await req.cookies.token
-   
+   console.log(token)
     if(!token) {
       return  console.log('Fonction authentificatio: Token inexistant')
     } 
