@@ -38,7 +38,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(cors({
-  origin: ['http://localhost:5173','http://localhost:5174'],  // Permet uniquement l'origine du frontend React
+  origin: ['https://hopeuser.vercel.app'],  // Permet uniquement l'origine du frontend React
   methods: ['GET', 'POST', 'OPTIONS'], // Méthodes autorisées
   allowedHeaders: ['Content-Type', 'Authorization'],  // En-têtes autorisés
   credentials: true,  // Autorise l'envoi de cookies
@@ -48,11 +48,11 @@ app.use(cors({
 
 app.use("/Uploads", express.static(path.join(__dirname, "Update", "Uploads"), {
   setHeaders: (res, path, stat) => {
-    res.set('Access-Control-Allow-Origin', ['http://localhost:5173','http://localhost:5174']); // Permet l'origine de ton frontend
+    res.set('Access-Control-Allow-Origin', ['https://hopeuser.vercel.app']); // Permet l'origine de ton frontend
     res.set('Access-Control-Allow-Methods', 'GET, OPTIONS'); // Permet les méthodes GET et OPTIONS
     res.set('cross-origin-resource-policy', 'cross-origin');  // Permet l'accès depuis un autre domaine
     res.set('cross-origin-opener-policy', 'unsafe-none');  // Permet d'éviter les restrictions de politique d'ouverture croisée
-    res.set('content-security-policy', "default-src 'self'; img-src 'self' http://localhost:3000");  // Permet de charger les images depuis ton backend
+    res.set('content-security-policy', "default-src 'self'; img-src 'self' https://hope-backend-production-813f.up.railway.app");  // Permet de charger les images depuis ton backend
   }
 }));
 
