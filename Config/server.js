@@ -5,25 +5,6 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 
-const verifyEmail = async (email) => {
-  const apiKey = 'bc4e42d0ef8c3e61261b5a528cf15c4d';
-  const url = `https://apilayer.net/api/check?access_key=${apiKey}&email=${email}&smtp=1&format=1`;
-
-  try {
-    const res = await axios.get(url);
-    
-    if (res.data.success === false) {
-      console.error('Erreur API Mailboxlayer :', res.data.error);
-      return null;
-    }
-
-    return res.data;
-  } catch (err) {
-    console.error(err);
-    return null;
-  }
-};
-
 
 let io;
 const connectedUsers = new Map();;
@@ -71,4 +52,4 @@ function IO() {
   return io
 }
 
-module.exports = {Socket, IO, connectedUsers,verifyEmail};
+module.exports = {Socket, IO, connectedUsers};

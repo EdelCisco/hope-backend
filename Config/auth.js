@@ -15,7 +15,7 @@ passport.use(
     try {
       const email = profile.emails[0].value;
       const [rows] = await db.execute('SELECT * FROM clients WHERE email = ?', [email]);
-
+       console.log(profile)
       if (rows.length > 0) {
         return done(null, rows[0]); // utilisateur existant
       }
@@ -42,6 +42,7 @@ passport.use(
         rang: "",
         complet: 0
       };
+     
       ConfirmationCompte(msg,email, motDePasse)
       return done(null, newUser);
     } catch (err) {

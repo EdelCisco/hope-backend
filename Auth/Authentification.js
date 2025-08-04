@@ -10,40 +10,33 @@ const Users                    = require ('./Users/Utilisateurs.js');
   body("password").isLength({min:8}).withMessage("Le mot de passe doit contenir au moins 8 caractères").matches(/[a-z]/).withMessage("Le mot de passe doit contenir au moins une minuscule").matches(/[A-Z]/).withMessage("Le mot de passe doit contenir au moins une majuscule").matches(/[\W_]/).withMessage("Le mot de passe doit contenir au moins un caractèr spéciale").matches(/[0-9]/).withMessage("Le mot de passe doit contenir au moins un chiffre"),
   ], Users.Inscription);
  
-  router.get('/medecins'   , Users.medecins)
-  router.post('/Token'   , Users.token)
-  router.get('/rdv'   , Users.Rdv);
-  router.post('/Code'   , Users.Code);
-  router.post('/Profil'        , Users.profil)
-  router.post('/Connexion'     , Users.Connexion)
-  router.post('/Suppression'   , Users.supprimer)
-  router.get('/Deconnexion'   , Users.deconnexion);
-  router.post('/resend-code',Users.resendCode)
-  router.post('/Souscription'  , Users.Souscription);
-  router.post('/Modification'  , Users.Modification)
-  router.post('/Modifier',Users.Modifier)
-  // router.post('/notifications/mark-as-read/:id'     , Users.Mark);
-  router.get ('/Authenfication'                     , Users.authentification)
-  // router.get ('/confirm/:tokenV'                , Users.Confirmation)
+ 
+  router.get  ('/rdv'                                                        , Users.Rdv);
+  router.get  ('/notifications/:id_client'                                  , Users.Notif);
+  router.get  ('/auth/google'                                                , Users.google);
+  router.get  ('/auth/google/callback'                                       , Users.googles);
+  router.get  ('/medecins'                                                   , Users.medecins)
+  router.get  ('/messages'                                                   , Users.messages);
+  router.get  ('/historique'                                                 , Users.historique);
+  router.get  ('/Deconnexion'                                                , Users.deconnexion);
+  router.get  ('/Authenfication'                                             , Users.authentification)
+ 
 
-//   router.get ('/notifications/:userId'              , Users.Notif);
+  router.post ('/notifications/:id_client/mark-as-read'                      , Users.Mark);
+  router.post ('/notifications/:id_client/delete/:id_notification'           , Users.Dell);
+  router.post ('/Code'                                                       , Users.Code);
+  router.post ('/Token'                                                      , Users.token)
+  router.post ('/Profil'                                                     , Users.profil)
+  router.post ('/notifications/:id_client/delete-all'                        ,Users.DellAll);
+  router.post ('/Modifier'                                                   ,Users.Modifier)
+  router.post ('/Suppression'                                                , Users.supprimer)
+  router.post ('/resend-code'                                                ,Users.resendCode)
+  router.post ('/Connexion'                                                  , Users.Connexion)
+  router.post ('/Souscription'                                               , Users.Souscription);
+  router.post ('/Modification'                                               , Users.Modification)
+  router.post ('/envoieMessage'                                              , Users.envoieMessage)
+  router.post ('/MotDePasseOublie'                                           ,Users.ModifierMotDePasse)
 
-// router.post('/notifications/mark-all-read', Users.  MarkAll);
-
-
-// router.post('/notifications/delete-all',Users.DellAll);
-
-// router.post('/notifications/delete/:id', Users.Dell);
-
-router.post('/MotDePasseOublie',Users.ModifierMotDePasse)
-// router.post('/reset-password',  [
-//     body("password").isLength({min:8}).withMessage("Le mot de passe doit contenir au moins 8 caractères").matches(/[a-z]/).withMessage("Le mot de passe doit contenir au moins une minuscule").matches(/[A-Z]/).withMessage("Le mot de passe doit contenir au moins une majuscule").matches(/[\W_]/).withMessage("Le mot de passe doit contenir au moins un caractèr spéciale").matches(/[0-9]/).withMessage("Le mot de passe doit contenir au moins un chiffre"),
-//   ],Users.resetPassword)
-
-router.get('/auth/google', Users.google);
-
-
-router.get('/auth/google/callback', Users.googles);
 
                                                                              
                                                       module.exports= router;

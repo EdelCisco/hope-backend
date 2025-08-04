@@ -20,7 +20,7 @@ dayjs.extend(timezone);
 
 exports.google= passport.authenticate('google', { scope: ['profile', 'email'] })
 
-exports.googles = (req, res, next) => {
+exports.googles = async(req, res, next) => {
   passport.authenticate('google', (err, user, info) => {
     if (err) {
       console.error('Erreur pendant la connexion Google :', err);
@@ -32,13 +32,13 @@ exports.googles = (req, res, next) => {
       return res.redirect('/Connexion');
     }
 
-    req.logIn(user, (err) => {
+    req.logIn(user, async(err) => {
       if (err) {
         console.error('Erreur lors de la connexion de l\'utilisateur :', err);
         return res.redirect('/Connexion');
       }
 
-      // Création du token JWT avec les infos de `user`
+        const [non_lu]= await db.execute("SELECT COUNT(*) AS nb_non_lus FROM messages WHERE id_client = ? AND  non_lu = FALSE",[user.id]) 
       const token = jwt.sign(
         {
           id: user.id_client,
@@ -47,7 +47,10 @@ exports.googles = (req, res, next) => {
           email: user.email,
           sexe: user.xexe,
           MDP:"******",
-          rg: user.rang
+          rg: user.rang,
+          role: 'client',
+          non_lu: non_lu
+
         },
         process.env.JWT_SECRET,
         { expiresIn: '1h' }
@@ -61,7 +64,7 @@ exports.googles = (req, res, next) => {
         maxAge: 3600000
       });
        console.log('Connexion réussie via Google OAuth');
-       return res.redirect('http://localhost:5173');
+       return res.redirect('https://hopeuser.vercel.app/');
     })
   })(req, res, next);
 };
@@ -90,7 +93,7 @@ exports.token = async(req, res) => {
                     return res.status(404).json({ error: 'Utilisateur non trouvé' });
                 } 
                 else { 
-                  
+                    const [non_lu]=await db.execute("SELECT COUNT(*) AS nb_non_lus FROM messages WHERE id_client = ? AND  non_lu = FALSE",[user.id]) 
                   
                  const infos={
                      id_client: sql[0].id_client,
@@ -100,9 +103,11 @@ exports.token = async(req, res) => {
                     Email: sql[0].email,
                     Sexe: sql[0].sexe,
                     Rang: sql[0].rang,
-                    complet:sql[0].complet
+                    complet:sql[0].complet,
+                     role: 'client',
+                     non_lu: non_lu[0].nb_non_lus
                  }
-            
+
                     res.json(infos);
                 }
             }
@@ -451,7 +456,7 @@ exports.authentification = async(req, res) => {
                     return res.status(404).json({ error: 'Utilisateur non trouvé' });
                 } 
                 else { 
-                      
+                  const [non_lu]=await db.execute("SELECT COUNT(*) AS nb_non_lus FROM messages WHERE id_client = ? AND  non_lu = FALSE",[user.id])    
                  const infos={
                     id_client: sql[0].id_client,
                     Nom: sql[0].nom_complet,
@@ -460,7 +465,9 @@ exports.authentification = async(req, res) => {
                     Email: sql[0].email,
                     Sexe: sql[0].sexe,
                     Rang: sql[0].Rang,
-                    complet:sql[0].complet
+                    complet:sql[0].complet,
+                    role: 'client',
+                    non_lu: non_lu
                     
                    
                  }
@@ -738,16 +745,183 @@ exports.medecins = async (req, res) => {
 
 
 
+exports.messages = async (req, res) => {
+  try {
+    const token = req.cookies.token;
+    if (!token) {
+      return res.json({ route: '/Connexion', errors: 'token expiré' });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
+      if (err) {
+        return res.status(403).json({ error: 'Token invalide' });
+      }
+
+const [rows] = await db.execute(`
+  SELECT 
+    m.id_message, m.contenu, m.date_envoi, m.envoyeur,
+    m.id_medecin, me.nom AS nom_medecin,
+    m.id_client, cl.nom_complet AS nom_client,
+    IFNULL(unread.count_non_lu, 0) AS non_lu
+  FROM messages m
+  INNER JOIN (
+    SELECT MAX(id_message) AS max_id
+    FROM messages
+    WHERE id_client = ?
+    GROUP BY id_medecin
+  ) AS latest ON m.id_message = latest.max_id
+  INNER JOIN medecins me ON me.id_medecin = m.id_medecin
+  INNER JOIN clients cl ON cl.id_client = m.id_client
+  LEFT JOIN (
+    SELECT id_medecin, COUNT(*) AS count_non_lu
+    FROM messages
+    WHERE id_client = ? AND non_lu = FALSE
+    GROUP BY id_medecin
+  ) AS unread ON unread.id_medecin = m.id_medecin
+  ORDER BY m.date_envoi DESC
+`, [user.id, user.id]);
+
+const conversations = rows.map(row => ({
+  id_message: row.id_message,
+  id_medecin: row.id_medecin,
+  nom: row.nom_medecin,
+  id_client: row.id_client,
+  nom_client: row.nom_client,
+  historique: [{
+    id: row.id_message,
+    msg: row.contenu,
+    sender: row.envoyeur,
+    date_envoi: row.date_envoi
+  }],
+  non_lu: row.non_lu
+}));
 
 
+      res.json(conversations);
+    });
+
+  } catch (e) {
+    console.log('Erreur au niveau des messages : ', e);
+    return res.status(400).json({ errors: "Erreur lors de la récupération des messages" });
+  }
+};
+
+exports.historique = async (req, res) => {
+  const id_medecin = req.query.id;
+  const token = req.cookies.token;
+
+  if (!token) return res.status(401).json({ message: "Non autorisé" });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const id_client = decoded.id;
+
+    const [rows] = await db.execute(`
+      SELECT 
+        m.id_message,
+        m.contenu,
+        m.date_envoi,
+        m.envoyeur,
+        m.id_medecin,
+        m.id_client,
+        med.nom AS nom_medecin
+      FROM messages m
+      INNER JOIN medecins med ON med.id_medecin = m.id_medecin
+      WHERE m.id_client = ? AND m.id_medecin = ?
+      ORDER BY m.date_envoi ASC
+    `, [id_client, id_medecin]);
+
+    if (rows.length === 0) {
+      return res.json({
+        id_message: null,
+        id_medecin,
+        id_client,
+        nom: "Médecin inconnu",
+        historique: [],
+        non_lu: 0
+      });
+    }
+
+    const historique = rows.map(msg => ({
+      id: msg.id_message,
+      msg: msg.contenu,
+      sender: msg.envoyeur,
+      date_envoi: msg.date_envoi
+    }));
+
+    res.json({
+      id_message: null,
+      id_medecin,
+      id_client,
+      nom: rows[0].nom_medecin,
+      historique,
+      non_lu: 0
+    });
+    await db.execute(
+  "UPDATE messages SET non_lu = TRUE WHERE id_client = ? AND id_medecin = ? AND lu = FALSE",
+  [id_client, id_medecin]
+);
 
 
+  } catch (error) {
+    console.error('Erreur historique:', error);
+    res.status(500).json({ message: "Erreur lors de la récupération de l'historique" });
+  }
+};
 
 
+exports.envoieMessage= async(req,res)=>{
+     try {
+         const token = await req.cookies.token
+        if (!token) {
+            
+           return res.json({ route: '/Connexion', errors: 'token expiré' })
+        }
+        jwt.verify(token, process.env.JWT_SECRET, async(err, user) => {
+     
+                if (err) {
+                    return res.status(403).json({ error: 'Token invalide' });
+                }
+             const { contenu, id_medecin, id_client, envoyeur } = req.body;
+                  
+                    const [sql] =    await db.execute(
+      `INSERT INTO messages (contenu, envoyeur, id_medecin, id_client,non_lu) VALUES (?, ?, ?, ?,TRUE)`,
+      [contenu, envoyeur, id_medecin, id_client]
+    );
 
+           const messageData = {
+        id_message: sql.insertId,
+        contenu,
+        id_medecin,
+        id_client,
+        envoyeur,
+        date_envoi: new Date().toISOString(),
+      };
 
+      // Identifier à qui envoyer la notification socket (destinataire)
+      let destinataireId;
+      if (envoyeur === 'medecin') {
+        destinataireId = id_client.toString();
+      } else if (envoyeur === 'client') {
+        destinataireId = id_medecin.toString();
+      }
 
+      const socketId = connectedUsers.get(destinataireId);
+      if (socketId) {
+        IO().to(socketId).emit('new_message', messageData);
+      }
 
+      res.json({ errors: null, infos: messageData });
+
+            })
+            
+                                                                                                                                         
+        
+    } catch (e) {
+        console.log('erreur au niveau de la suppression: ', e);
+        return res.status(400).json({errors: "Erreur lors de la suppression"});
+    }      
+}
 
 
 
@@ -756,61 +930,54 @@ exports.medecins = async (req, res) => {
 
 
 exports.Mark = async (req, res) => {
-  const notifId = req.params.id;
-  await db.query("UPDATE notifications SET is_read = 1 WHERE id = ?", [notifId]);
-  res.json({ success: true });
+ const { id_client } = req.params;
+  try {
+    await db.execute(
+      "UPDATE notifications SET non_lu = TRUE WHERE id_user = ? AND non_lu = FALSE AND type='clients'",
+      [id_client]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erreur lors de la mise à jour des notifications' });
+  }
 };
 
 exports.Notif = async (req, res) => {
-  const userId = req.params.userId;
+  const id_client = req.params.id_client;
   const [rows] = await db.query(
-    "SELECT * FROM notifications WHERE id_utilisateur = ? ORDER BY created_at DESC",
-    [userId]
+    "SELECT * FROM notifications WHERE id_user = ? AND type='clients'",
+    [id_client]
   );
   res.json(rows);
 }
 
-exports.MarkAll= async (req, res) => {
-  const { id_utilisateur } = req.body;
 
-  if (!id_utilisateurn) {
-    return res.status(400).json({ error: "id_utilisateur requis" });
-  }
 
+exports.DellAll=  async (req, res) => {
+  const { id_client } = req.params;
   try {
-    await db.query(`UPDATE notifications SET is_read = 1 WHERE id_utilisateur= ?`, [id_utilisateur]);
-    res.json({ success: true });
+    await db.execute("DELETE FROM notifications WHERE id_user = ? AND type='clients'", [id_client]);
+    res.json({ success: true, message: 'Toutes les notifications ont été supprimées.' });
   } catch (err) {
-    console.error("Erreur DB:", err);
-    res.status(500).json({ error: "Erreur serveur" });
-  }
-}
-
-
-exports.DellAll= async (req, res) => {
-  const {id_utilisateur } = req.body;
-
-  if (!id_utilisateur) {
-    return res.status(400).json({ error: "id_utilisateur requis" });
-  }
-
-  try {
-    await db.query(`DELETE FROM notifications WHERE id_utilisateur = ?`, [id_utilisateur]);
-    res.json({ success: true });
-  } catch (err) {
-    console.error("Erreur DB:", err);
-    res.status(500).json({ error: "Erreur serveur" });
+    console.error(err);
+    res.status(500).json({ error: 'Erreur lors de la suppression des notifications.' });
   }
 };
 
 exports.Dell=  async (req, res) => {
-  const id = req.params.id;
-
+  const { id_client, id_notification } = req.params;
   try {
-    await db.query(`DELETE FROM notifications WHERE id = ?`, [id]);
-    res.json({ success: true });
+    const [result] = await db.execute(
+      'DELETE FROM notifications WHERE id_user = ? AND id= ? ',
+      [id_client, id_notification]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Notification non trouvée.' });
+    }
+    res.json({ success: true, message: 'Notification supprimée.' });
   } catch (err) {
-    console.error("Erreur suppression:", err);
-    res.status(500).json({ error: "Erreur serveur" });
+    console.error(err);
+    res.status(500).json({ error: 'Erreur lors de la suppression de la notification.' });
   }
 }
