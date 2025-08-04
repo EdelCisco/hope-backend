@@ -237,11 +237,10 @@ exports.Code = async (req, res) => {
              let [sq] = await db.execute(`SELECT * FROM clients  WHERE email=?`, [email])
              const data= sq[0]
                 
-                   const token = jwt.sign({ id: data.id_client,nom: data.nom_complet,ddn: data.date_de_naissance, email: data.email, MDP: "******", sexe: data.xexe, rg: data.rang
-                            }, process.env.JWT_SECRET, {expiresIn: '1h'});
+                   const token = jwt.sign({ id: data.id_client,nom: data.nom_complet,ddn: data.date_de_naissance, email: data.email, MDP: "******", sexe: data.xexe, rg: data.rang}, process.env.JWT_SECRET, {expiresIn: '1h'})
                         
 
-                    res.cookie('token', token, {httpOnly: true, secure: true, sameSite:'lax', maxAge:  86400000});
+                    res.cookie('token', token, {httpOnly: true, secure: true, sameSite:'none', maxAge:  86400000});
                     res.redirect('/Authenfication');
             }
             else{
@@ -335,11 +334,10 @@ exports.Connexion = async (req, res) => {
                 else {
                   
                            
-                         const token = jwt.sign({ id: data.id_client,nom: data.nom_complet,ddn: data.date_de_naissance, email: data.email, MDP: "******", sexe: data.xexe, rg: data.rang
-                            }, process.env.JWT_SECRET, {expiresIn: rememberMe ? '7d' : '1h'});
+                         const token = jwt.sign({ id: data.id_client,nom: data.nom_complet,ddn: data.date_de_naissance, email: data.email, MDP: "******", sexe: data.xexe, rg: data.rang}, process.env.JWT_SECRET, {expiresIn: rememberMe ? '7d' : '1h'});
                         
 
-                    res.cookie('token', token, {httpOnly: true, secure: true, sameSite:'lax',     maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000});
+                    res.cookie('token', token, {httpOnly: true, secure: true, sameSite:'none',maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000});
                     res.redirect('/Authenfication');
                        
 
