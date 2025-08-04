@@ -474,7 +474,7 @@ exports.authentification = async(req, res) => {
                     
                    
                  }
-               res.json({errors:null,route:'/', infos: infos})
+               res.json({errors: null, route:'/', infos: infos})
                 }
             }
             catch(e){
