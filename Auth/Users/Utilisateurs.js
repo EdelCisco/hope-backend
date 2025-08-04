@@ -97,13 +97,13 @@ exports.token = async(req, res) => {
                   
                  const infos={
                      id_client: sql[0].id_client,
-                    Nom: sql[0].nom_complet,
-                    ddn: sql[0].date_de_naissance,
-                    MotDePasse: user.MDP,
-                    Email: sql[0].email,
-                    Sexe: sql[0].sexe,
-                    Rang: sql[0].rang,
-                    complet:sql[0].complet,
+                        Nom: sql[0].nom_complet,
+                        ddn: sql[0].date_de_naissance,
+                        MotDePasse: user.MDP,
+                        Email: sql[0].email,
+                        Sexe: sql[0].sexe,
+                        Rang: sql[0].rang,
+                        complet:sql[0].complet,
                      role: 'client',
                      non_lu: non_lu[0].nb_non_lus
                  }
