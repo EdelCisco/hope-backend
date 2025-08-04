@@ -439,7 +439,7 @@ exports.deconnexion = async(req, res) => {
 
 exports.authentification = async(req, res) => {
     const token = await req.cookies.token
-   console.log(token)
+
     if(!token) {
       return  console.log('Fonction authentificatio: Token inexistant')
     } 
