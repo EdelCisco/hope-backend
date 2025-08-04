@@ -228,6 +228,7 @@ exports.Code = async (req, res) => {
   try {
       const {email,code,objet, nbre1,nbre2,nbre3,nbre4} = req.body;
         const code1= nbre1+nbre2+nbre3+nbre4;
+       console.log(req.body)
  
         if(code1===code){
             console.log(objet)
