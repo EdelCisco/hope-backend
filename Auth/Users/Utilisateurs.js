@@ -246,7 +246,7 @@ exports.Code = async (req, res) => {
             else{
         
                 res.json({
-                    erors: null,
+                    errors: null,
                     route:'/RenouvelerLemdp',
                     email:email
                 })
@@ -442,7 +442,7 @@ exports.authentification = async(req, res) => {
     const token = await req.cookies.token
    
     if(!token) {
-      return  console.log('Fonction authentification: Token inexistant')
+      return  console.log('Fonction authentificatio: Token inexistant')
     } 
     else {
         jwt.verify(token, process.env.JWT_SECRET, async(e, user) => {
