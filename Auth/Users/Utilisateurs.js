@@ -668,7 +668,7 @@ exports.Souscription = async (req, res,) => {
       user: process.env.USER,
       port: process.env.PORT_S,
       password: process.env.PASS,
-      secure: true
+      secure: false
     })
 
     // Envoi dans le dossier public "htdocs"
