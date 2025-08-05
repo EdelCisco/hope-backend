@@ -714,7 +714,7 @@ exports.Souscription = async (req, res,) => {
                     [user.id, med, nom, ddn, sexe, telephone, medecin, specialite, motif, typeDePatient, document, informations, DateHeure, 0, 0]
                 );
 
-                return res.status(200).json({ route:'/' });
+                return res.status(200).json({ errors:null, route:'/' });
 
             } catch (e) {
                 console.log('Erreur lors de la souscription: ', e);
