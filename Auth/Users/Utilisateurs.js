@@ -715,7 +715,7 @@ exports.Souscription = async (req, res,) => {
                 await db.execute('INSERT INTO notifications (id_user,message,type,non_lu) VALUES (?,?,?,?)',[user.id,`votre rendez-vous pour ${nom} au service de ${specialite} a été reçu, veuillez attendre la confirmation de celui-ci`,'clients',0])
                 
                 const [rdv]= await db.execute('SELECT * FROM notifications WHERE id_user=? AND type="clients"',[user.id])
-              IO.emit('nouveau_rdv',{rdv});
+              IO().emit('nouveau_rdv',{rdv});
                 return res.json({route:'/' });
 
             } catch (e) {
