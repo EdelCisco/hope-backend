@@ -443,7 +443,7 @@ exports.deconnexion = async(req, res) => {
 //AUTHENTIFICATION DES UTILISATEURS
 
 exports.authentification = async(req, res) => {
-  console.log('Test123')
+  
     const token = await req.cookies.token
 
     if(!token) {
@@ -479,7 +479,7 @@ exports.authentification = async(req, res) => {
                     
                    
                  }
-                console.log('Test123')
+
                res.json({errors: null, route:'/', infos: infos})
                 }
             }
