@@ -900,7 +900,7 @@ exports.historique = async (req, res) => {
       non_lu: 0
     });
     await db.execute(
-  "UPDATE messages SET non_lu = TRUE WHERE id_client = ? AND id_medecin = ? AND lu = FALSE",
+  "UPDATE messages SET non_lu = TRUE WHERE id_client = ? AND id_medecin = ? AND non_lu = FALSE",
   [id_client, id_medecin]
 );
 
