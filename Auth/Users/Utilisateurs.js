@@ -652,6 +652,8 @@ exports.supprimer = async (req, res) => {
 
 exports.Souscription = async (req, res,) => {
   const file = req.file
+  console.log(req.file)
+  console.log(req.body)
   if (!file) return res.status(400).json({ error: 'Aucun fichier reçu' })
 
   const fileName = `${Date.now()}_${file.originalname}`
