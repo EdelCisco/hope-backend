@@ -30,7 +30,7 @@ const upload                   = multer({ storage: multer.memoryStorage() })
   router.post ('/deleteAllCon'                                               ,Users.DellCon);
   router.post ('/Profil'                                                     , Users.profil)
   router.post ('/notifications/:id_client/delete-all'                        ,Users.DellAll);
-  router.post ('/Annuler'                                                    ,Users.Annuler)
+  router.post ('/Annuler/:id'                                                ,Users.Annuler)
   router.post ('/Modifier'                                                   ,Users.Modifier)
   router.post ('/Suppression'                                                , Users.supprimer)
   router.post ('/resend-code'                                                ,Users.resendCode)
