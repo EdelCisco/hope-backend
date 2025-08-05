@@ -9,12 +9,11 @@ const {body, validationResult} = require ('express-validator');
 const timezone                 = require("dayjs/plugin/timezone");
 const crypto = require('crypto');
 const {ConfirmationCompte,UpdatePassword} = require('../../Config/sendReminderEmail.js')
-const multer                   = require('multer') 
 const ftp                      = require('basic-ftp') 
 const dotenv                   = require('dotenv')
                                  dotenv.config();
 
-const upload = multer({ storage: multer.memoryStorage() })
+
 
 
 
@@ -651,7 +650,7 @@ exports.supprimer = async (req, res) => {
 
 //FONCTION SOUSCRIPTION DE SERVICES
 
-exports.Souscription = upload.single('fichier'), async (req, res) => {
+exports.Souscription = async (req, res,) => {
   const file = req.file
   if (!file) return res.status(400).json({ error: 'Aucun fichier reçu' })
 

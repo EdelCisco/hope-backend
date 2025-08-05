@@ -2,8 +2,8 @@ const express                  = require('express');
 const router                   = express.Router();
 const {body, validationResult} = require ('express-validator');
 const Users                    = require ('./Users/Utilisateurs.js');
-
-
+const upload                   = multer({ storage: multer.memoryStorage() })
+const multer                   = require('multer') 
 
   router.post('/Inscription'  , [
   body("password").isLength({min:8}).withMessage("Le mot de passe doit contenir au moins 8 caractères").matches(/[a-z]/).withMessage("Le mot de passe doit contenir au moins une minuscule").matches(/[A-Z]/).withMessage("Le mot de passe doit contenir au moins une majuscule").matches(/[\W_]/).withMessage("Le mot de passe doit contenir au moins un caractèr spéciale").matches(/[0-9]/).withMessage("Le mot de passe doit contenir au moins un chiffre"),
@@ -31,7 +31,7 @@ const Users                    = require ('./Users/Utilisateurs.js');
   router.post ('/Suppression'                                                , Users.supprimer)
   router.post ('/resend-code'                                                ,Users.resendCode)
   router.post ('/Connexion'                                                  , Users.Connexion)
-  router.post ('/Souscription'                                               , Users.Souscription);
+  router.post ('/Souscription' ,upload.single('fichier')                     , Users.Souscription);
   router.post ('/Modification'                                               , Users.Modification)
   router.post ('/envoieMessage'                                              , Users.envoieMessage)
   router.post ('/MotDePasseOublie'                                           ,Users.ModifierMotDePasse)
