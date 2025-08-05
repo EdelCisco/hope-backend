@@ -112,7 +112,7 @@ exports.token = async(req, res) => {
                         complet:sql[0].complet,
                      role: 'client',
                      non_lu: non_lu[0].nb_non_lus,
-                     rdv: rdv.rdv
+                     rdv: rdv[0].rdv
                  }
 
                     res.json(infos);
@@ -468,7 +468,7 @@ exports.authentification = async(req, res) => {
                 else { 
                   const [non_lu]=await db.execute("SELECT COUNT(*) AS nb_non_lus FROM messages WHERE id_client = ? AND  non_lu = FALSE",[user.id])  
                    const [rdv]= await db.execute("SELECT COUNT(*) AS rdv FROM rendez_vous WHERE id_client=?",[user.id])  
-                   console.log(rdv.rdv)
+               
                  const infos={
                     id_client: sql[0].id_client,
                     Nom: sql[0].nom_complet,
@@ -479,8 +479,8 @@ exports.authentification = async(req, res) => {
                     Rang: sql[0].Rang,
                     complet:sql[0].complet,
                     role: 'client',
-                    non_lu: non_lu,
-                    rdv: rdv.rdv
+                    non_lu: non_lu[0].nb_non_lus,
+                    rdv: rdv[0].rdv
                     
                    
                  }
