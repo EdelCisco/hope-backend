@@ -12,7 +12,7 @@ const http = require('http');
 const {Socket }= require('./Config/server.js')
 const passport = require('./Config/auth.js');
 
-// const Auth             = require ('./Auth/Authentification.js');
+const Auth             = require ('./Auth/Authentification.js');
 
 
 
