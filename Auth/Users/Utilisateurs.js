@@ -9,6 +9,12 @@ const {body, validationResult} = require ('express-validator');
 const timezone                 = require("dayjs/plugin/timezone");
 const crypto = require('crypto');
 const {ConfirmationCompte,UpdatePassword} = require('../../Config/sendReminderEmail.js')
+const multer                   = require('multer') 
+const ftp                      = require('basic-ftp') 
+const dotenv                   = require('dotenv')
+                                 dotenv.config();
+
+const upload = multer({ storage: multer.memoryStorage() })
 
 
 
@@ -645,10 +651,31 @@ exports.supprimer = async (req, res) => {
 
 //FONCTION SOUSCRIPTION DE SERVICES
 
-exports.Souscription = async (req, res) => {
-    const { nom, ddn, sexe, telephone, specialite, motif, medecin, DateHeure, document, typeDePatient, informations } = req.body;
+exports.Souscription = upload.single('fichier'), async (req, res) => {
+  const file = req.file
+  if (!file) return res.status(400).json({ error: 'Aucun fichier reçu' })
 
-    try {
+  const fileName = `${Date.now()}_${file.originalname}`
+
+  // Connexion FTP à AwardSpace
+  const client = new ftp.Client()
+  try {
+    await client.access({
+      host: process.env.HOST_NAME,
+      user: process.env.USER,
+      password: process.env.PASS,
+      secure: true
+    })
+
+    // Envoi dans le dossier public "htdocs"
+    await client.uploadFrom(Buffer.from(file.buffer), `htdocs/${fileName}`)
+    client.close()
+
+    // URL publique
+    const document = `http://hop123.atwebpages.com/${fileName}`
+
+    const { nom, ddn, sexe, telephone, specialite, motif, medecin, DateHeure, typeDePatient, informations } = req.body;
+
         const token = await req.cookies.token;
 
         if (!token) {
