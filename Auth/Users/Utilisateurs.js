@@ -1034,7 +1034,8 @@ exports.Annuler=  async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'rendez-vous non trouvée.' });
     }
-    res.json({ success: true, message: 'Rendez-vous annulé.' });
+
+    res.json({ success: true,errors:null, message: 'Rendez-vous annulé.' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erreur lors de la suppression du rendez-vous.' });
