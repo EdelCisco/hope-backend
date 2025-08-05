@@ -655,8 +655,7 @@ exports.supprimer = async (req, res) => {
 
 exports.Souscription = async (req, res,) => {
   const file = req.file
-  console.log(req.file)
-  console.log(req.body)
+ 
   if (!file) return res.status(400).json({ error: 'Aucun fichier reçu' })
 
   const fileName = `${Date.now()}_${file.originalname}`
@@ -713,8 +712,11 @@ exports.Souscription = async (req, res,) => {
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                     [user.id, med, nom, ddn, sexe, telephone, medecin, specialite, motif, typeDePatient, document, informations, DateHeure, 0, 0]
                 );
-
-                return res.json({ errors: null, route:'/' });
+                await db.execute('INSERT INTO notifications (id_user,message,type,non_lu) VALUES (?,?,?,?)',[user.id,`votre rendez-vous pour ${nom} au service de ${specialite} a été reçu, veuillez attendre la confirmation de celui-ci`,'clients',0])
+                
+                const [rdv]= await db.execute('SELECT * FROM notifications WHERE id_user=? AND type="clients"',[user.id])
+              IO.emit('nouveau_rdv',{rdv});
+                return res.json({route:'/' });
 
             } catch (e) {
                 console.log('Erreur lors de la souscription: ', e);
