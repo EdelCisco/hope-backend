@@ -10,6 +10,7 @@ const timezone                 = require("dayjs/plugin/timezone");
 const crypto = require('crypto');
 const {ConfirmationCompte,UpdatePassword} = require('../../Config/sendReminderEmail.js')
 const ftp                      = require('basic-ftp') 
+const { PassThrough }          = require('stream');
 const dotenv                   = require('dotenv')
                                  dotenv.config();
 
@@ -672,9 +673,11 @@ exports.Souscription = async (req, res,) => {
     })
 
     // Envoi dans le dossier public "htdocs"
-    await client.uploadFrom(Buffer.from(file.buffer), `htdocs/${fileName}`)
-    client.close()
+    const bufferStream = new PassThrough();
+     bufferStream.end(file.buffer);
 
+    await client.uploadFrom(bufferStream, `htdocs/${fileName}`);
+    client.close();
     // URL publique
     const document = `http://hop123.atwebpages.com/${fileName}`
 
