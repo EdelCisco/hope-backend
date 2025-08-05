@@ -478,6 +478,7 @@ exports.authentification = async(req, res) => {
                     
                    
                  }
+                console.log('Test123')
                res.json({errors: null, route:'/', infos: infos})
                 }
             }
