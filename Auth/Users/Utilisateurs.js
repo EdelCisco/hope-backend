@@ -100,7 +100,7 @@ exports.token = async(req, res) => {
                 } 
                 else { 
                     const [non_lu]=await db.execute("SELECT COUNT(*) AS nb_non_lus FROM messages WHERE id_client = ? AND  non_lu = FALSE",[user.id]) 
-                  
+                  const [rdv]= await db.execute("SELECT COUNT(*) AS rdv FROM rendez_vous WHERE id_client=?",[user.id])
                  const infos={
                      id_client: sql[0].id_client,
                         Nom: sql[0].nom_complet,
@@ -111,7 +111,8 @@ exports.token = async(req, res) => {
                         Rang: sql[0].rang,
                         complet:sql[0].complet,
                      role: 'client',
-                     non_lu: non_lu[0].nb_non_lus
+                     non_lu: non_lu[0].nb_non_lus,
+                     rdv: rdv.rdv
                  }
 
                     res.json(infos);
@@ -465,7 +466,8 @@ exports.authentification = async(req, res) => {
                     return res.status(404).json({ error: 'Utilisateur non trouvé' });
                 } 
                 else { 
-                  const [non_lu]=await db.execute("SELECT COUNT(*) AS nb_non_lus FROM messages WHERE id_client = ? AND  non_lu = FALSE",[user.id])    
+                  const [non_lu]=await db.execute("SELECT COUNT(*) AS nb_non_lus FROM messages WHERE id_client = ? AND  non_lu = FALSE",[user.id])  
+                   const [rdv]= await db.execute("SELECT COUNT(*) AS rdv FROM rendez_vous WHERE id_client=?",[user.id])  
                  const infos={
                     id_client: sql[0].id_client,
                     Nom: sql[0].nom_complet,
@@ -476,7 +478,8 @@ exports.authentification = async(req, res) => {
                     Rang: sql[0].Rang,
                     complet:sql[0].complet,
                     role: 'client',
-                    non_lu: non_lu
+                    non_lu: non_lu,
+                    rdv: rdv.rdv
                     
                    
                  }
@@ -770,8 +773,8 @@ exports.medecins = async (req, res) => {
             
                   
                     const [sql] = await db.execute('SELECT * FROM medecins');
-
-                        res.json(sql);
+                    const [service] = await db.execute('SELECT service FROM medecins GROUP BY service');
+                        res.json({medecin: sql, service: service});
 
                                                                                                                          
         
@@ -1017,5 +1020,82 @@ exports.Dell=  async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erreur lors de la suppression de la notification.' });
+  }
+}
+
+
+exports.Annuler=  async (req, res) => {
+  const { id} = req.params;
+  try {
+    const [result] = await db.execute(
+      'DELETE FROM rendez_vous WHERE id_rendez_vous = ? ',
+      [id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'rendez-vous non trouvée.' });
+    }
+    res.json({ success: true, message: 'Rendez-vous annulé.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erreur lors de la suppression du rendez-vous.' });
+  }
+}
+
+exports.Mes= async (req, res) => {
+  const { id_message, id_medecin, id_client } = req.body;
+  if (!id_message || !id_medecin || !id_client) {
+    return res.status(400).json({ error: "id_message, id_medecin et id_client sont requis" });
+  }
+
+  try {
+ 
+    await db.execute(
+      'DELETE FROM messages WHERE id_message = ?',
+      [id_message]
+    );
+
+    res.json({ success: true, message: "Message supprimé" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erreur serveur lors de la suppression du message" });
+  }
+}
+
+exports.DellMes= async (req, res) => {
+  const { id_medecin, id_client } = req.body;
+  if (!id_medecin || !id_client) {
+    return res.status(400).json({ error: "id_medecin et id_client sont requis" });
+  }
+
+  try {
+    // Supprimer tous les messages entre ces deux
+    await db.execute(
+      'DELETE FROM messages WHERE id_medecin = ? AND id_client = ?',
+      [id_medecin, id_client]
+    );
+
+    res.json({ success: true, message: "Conversation supprimée" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erreur serveur lors de la suppression de la conversation" });
+  }
+}
+
+
+
+exports.DellCon= async (req, res) => {
+  const { id_client } = req.body;
+
+  try {
+    // Supprimer tous les messages entre ces deux
+    await db.execute(
+      'DELETE FROM messages WHERE id_client = ?',
+      [id_client]
+    );
+
+    res.json({ success: true, message: "Conversation supprimée" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erreur serveur lors de la suppression de la conversation" });
   }
 }
