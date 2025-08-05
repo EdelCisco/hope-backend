@@ -666,6 +666,7 @@ exports.Souscription = async (req, res,) => {
     await client.access({
       host: process.env.HOST_NAME,
       user: process.env.USER,
+      port: process.env.PORT_S,
       password: process.env.PASS,
       secure: true
     })
