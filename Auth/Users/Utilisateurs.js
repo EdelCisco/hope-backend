@@ -468,6 +468,7 @@ exports.authentification = async(req, res) => {
                 else { 
                   const [non_lu]=await db.execute("SELECT COUNT(*) AS nb_non_lus FROM messages WHERE id_client = ? AND  non_lu = FALSE",[user.id])  
                    const [rdv]= await db.execute("SELECT COUNT(*) AS rdv FROM rendez_vous WHERE id_client=?",[user.id])  
+                   console.log(rdv.rdv)
                  const infos={
                     id_client: sql[0].id_client,
                     Nom: sql[0].nom_complet,
