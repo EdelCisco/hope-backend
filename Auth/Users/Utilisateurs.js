@@ -671,12 +671,12 @@ exports.Souscription = async (req, res,) => {
       password: process.env.PASS,
       secure: false
     })
-  await client.ensureDir("htdocs");
+ 
     // Envoi dans le dossier public "htdocs"
     const bufferStream = new PassThrough();
      bufferStream.end(file.buffer);
 
-    await client.uploadFrom(bufferStream, `htdocs/${fileName}`);
+    await client.uploadFrom(bufferStream, fileName);
     client.close();
     // URL publique
     const document = `http://hop123.atwebpages.com/${fileName}`
