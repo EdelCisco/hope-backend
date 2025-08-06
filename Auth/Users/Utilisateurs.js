@@ -1101,3 +1101,60 @@ exports.DellCon= async (req, res) => {
     res.status(500).json({ error: "Erreur serveur lors de la suppression de la conversation" });
   }
 }
+
+
+
+
+
+
+exports.image = async (req, res) => {
+    try {
+         const token = await req.cookies.token
+        if (!token) {
+            
+           return res.json({ route: '/Connexion', errors: 'token expiré' })
+        }
+        jwt.verify(token, process.env.JWT_SECRET, async(err, user) => {
+     
+                if (err) {
+                    return res.status(403).json({ error: 'Token invalide' });
+                }
+            
+  const file = req.file
+ 
+  if (!file) return res.status(400).json({ error: 'Aucun fichier reçu' })
+
+  const fileName = `${Date.now()}_${file.originalname}`
+
+  // Connexion FTP à AwardSpace
+  const client = new ftp.Client()
+    await client.access({
+      host: process.env.HOST_NAME,
+      user: process.env.USER,
+      port: process.env.PORT_S,
+      password: process.env.PASS,
+      secure: false
+    })
+ 
+    // Envoi dans le dossier public "htdocs"
+    const bufferStream = new PassThrough();
+     bufferStream.end(file.buffer);
+
+    await client.uploadFrom(bufferStream, `hop123.atwebpages.com/${fileName}`);
+    client.close();
+    // URL publique
+    const image = `http://hop123.atwebpages.com/${fileName}`
+                  
+                    const [sql] = await db.execute('UPDATE clients SET image=? WHERE id_client=?', [image,user.id]);
+
+                        res.json({errors : null, infos: sql});
+
+            })
+            
+                                                                                                                                         
+        
+    } catch (e) {
+        console.log('erreur au niveau de la suppression: ', e);
+        return res.status(400).json({errors: "Erreur lors de la suppression"});
+    }   
+}
