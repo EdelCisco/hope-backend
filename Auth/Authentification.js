@@ -25,7 +25,7 @@ const upload                   = multer({ storage: multer.memoryStorage() })
   router.post ('/notifications/:id_client/mark-as-read'                      , Users.Mark);
   router.post ('/notifications/:id_client/delete/:id_notification'           , Users.Dell);
   router.post ('/Code'                                                       , Users.Code);
-  router.post ('/image',upload.single('image  ')                             , Users.image)
+  router.post ('/image',upload.single('image')                               , Users.image)
   router.post ('/Token'                                                      , Users.token)
   router.post ('/deleteAllMessages'                                          ,Users.DellMes);
   router.post ('/deleteAllCon'                                               ,Users.DellCon);
