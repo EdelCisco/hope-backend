@@ -110,6 +110,7 @@ exports.token = async(req, res) => {
                         Sexe: sql[0].sexe,
                         Rang: sql[0].rang,
                         complet:sql[0].complet,
+                        image: sql[0].image,
                      role: 'client',
                      non_lu: non_lu[0].nb_non_lus,
                      rdv: rdv[0].rdv
@@ -478,6 +479,7 @@ exports.authentification = async(req, res) => {
                     Sexe: sql[0].sexe,
                     Rang: sql[0].Rang,
                     complet:sql[0].complet,
+                    image: sql[0].image,
                     role: 'client',
                     non_lu: non_lu[0].nb_non_lus,
                     rdv: rdv[0].rdv
