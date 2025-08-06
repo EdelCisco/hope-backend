@@ -1048,7 +1048,7 @@ exports.Mes= async (req, res) => {
   if (!id_message || !id_medecin || !id_client) {
     return res.status(400).json({ error: "id_message, id_medecin et id_client sont requis" });
   }
-
+console.log(id_message)
   try {
  
     await db.execute(

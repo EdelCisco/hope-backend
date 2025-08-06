@@ -21,7 +21,7 @@ const upload                   = multer({ storage: multer.memoryStorage() })
   router.get  ('/Deconnexion'                                                , Users.deconnexion);
   router.get  ('/Authenfication'                                             , Users.authentification)
  
-  router.post (' /deleteMessage'                                             ,Users.Mes);
+  router.post ('/deleteMessage'                                              ,Users.Mes);
   router.post ('/notifications/:id_client/mark-as-read'                      , Users.Mark);
   router.post ('/notifications/:id_client/delete/:id_notification'           , Users.Dell);
   router.post ('/Code'                                                       , Users.Code);
